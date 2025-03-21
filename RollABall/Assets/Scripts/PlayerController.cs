@@ -1,23 +1,29 @@
 using UnityEngine;
 using UnityEngine.InputSystem;
-public class PlayerController : MonoBehaviour
+using Mirror;
+public class PlayerController : NetworkBehaviour
 {
     PlayerInputAction playerInput;
 
     [SerializeField]
-    private Rigidbody rb;
+    Rigidbody rb;
 
-    private float movementX;
-    private float movementY;
+    float movementX;
+    float movementY;
 
     const float MOVE_FORCE = 100f;
 
-    void Start()
+    public override void OnStartLocalPlayer()
     {
+        Debug.Log("S S S Start Local Player");
+        Camera mainCam = Camera.main;
+        var camController = mainCam.GetComponent<CameraController>();
+        camController.SetupPlayer(this.gameObject);
+
         playerInput = new PlayerInputAction();
         playerInput.Player.Enable();
-        playerInput.Player.Move.performed += ctx => this.OnMove(ctx);
-        playerInput.Player.Move.canceled += ctx => this.OnMove(ctx);
+        playerInput.Player.Move.performed += ctx => this.OnMovement(ctx);
+        playerInput.Player.Move.canceled += ctx => this.OnMovement(ctx);
     }
 
 
@@ -27,8 +33,13 @@ public class PlayerController : MonoBehaviour
         rb.AddForce(movement);
     }
 
-    public void OnMove(InputAction.CallbackContext ctx)
+    public void OnMovement(InputAction.CallbackContext ctx)
     {
+        if (!isLocalPlayer)
+        {
+            return;
+        }
+
         if (ctx.performed)
         {
             Vector2 movementVector = ctx.ReadValue<Vector2>();
