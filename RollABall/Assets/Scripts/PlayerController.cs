@@ -5,10 +5,18 @@ public class PlayerController : NetworkBehaviour
 {
     PlayerInputAction playerInput;
 
+    public TextMesh playerNameText;
+    public GameObject flaotingInfo;
+
+    [SyncVar(hook = nameof(OnNameChanged))]
+    public string playerName;
+
+
     [SyncVar(hook = nameof(OnColorChanged))]
     public Color playerColor = Color.white;
 
     Material playerMaterialClone;
+
     [SerializeField]
     Rigidbody rb;
 
@@ -17,12 +25,19 @@ public class PlayerController : NetworkBehaviour
 
     const float MOVE_FORCE = 1000f;
 
+    void OnNameChanged(string _old, string _new)
+    {
+        playerNameText.text = playerName;
+    }
+
     void OnColorChanged(Color oldColor, Color newColor)
     {
         Renderer currRender = this.GetComponent<Renderer>();
         playerMaterialClone = new Material(currRender.material);
         playerMaterialClone.color = newColor;
         currRender.material = playerMaterialClone;
+
+        string name = $"Player {Random.Range(100, 1000)}";
     }
 
     public override void OnStartLocalPlayer()
@@ -38,12 +53,15 @@ public class PlayerController : NetworkBehaviour
         playerInput.Player.Move.canceled += ctx => this.OnMovement(ctx);
 
         Color color = new Color(Random.Range(0f, 1f), Random.Range(0f, 1f), Random.Range(0f, 1f));
-        CmdSetupPlayer(color);
+        CmdSetupPlayer(name, color);
+
+        flaotingInfo.transform.parent = null;
     }
 
     [Command]
-    public void CmdSetupPlayer(Color color)
+    public void CmdSetupPlayer(string name, Color color)
     {
+        playerName = name;
         playerColor = color;
     }
 
@@ -51,6 +69,9 @@ public class PlayerController : NetworkBehaviour
     {
         Vector3 movement = new Vector3(movementX, 0f, movementY) * MOVE_FORCE * Time.deltaTime;
         rb.AddForce(movement);
+
+        Vector3 pos = this.transform.position;
+        flaotingInfo.transform.position = pos + Vector3.up * 1.5f;
     }
 
     public void OnMovement(InputAction.CallbackContext ctx)
