@@ -5,6 +5,10 @@ public class PlayerController : NetworkBehaviour
 {
     PlayerInputAction playerInput;
 
+    [SyncVar(hook = nameof(OnColorChanged))]
+    public Color playerColor = Color.white;
+
+    Material playerMaterialClone;
     [SerializeField]
     Rigidbody rb;
 
@@ -12,6 +16,14 @@ public class PlayerController : NetworkBehaviour
     float movementY;
 
     const float MOVE_FORCE = 1000f;
+
+    void OnColorChanged(Color oldColor, Color newColor)
+    {
+        Renderer currRender = this.GetComponent<Renderer>();
+        playerMaterialClone = new Material(currRender.material);
+        playerMaterialClone.color = newColor;
+        currRender.material = playerMaterialClone;
+    }
 
     public override void OnStartLocalPlayer()
     {
@@ -24,8 +36,16 @@ public class PlayerController : NetworkBehaviour
         playerInput.Player.Enable();
         playerInput.Player.Move.performed += ctx => this.OnMovement(ctx);
         playerInput.Player.Move.canceled += ctx => this.OnMovement(ctx);
+
+        Color color = new Color(Random.Range(0f, 1f), Random.Range(0f, 1f), Random.Range(0f, 1f));
+        CmdSetupPlayer(color);
     }
 
+    [Command]
+    public void CmdSetupPlayer(Color color)
+    {
+        playerColor = color;
+    }
 
     void FixedUpdate()
     {
