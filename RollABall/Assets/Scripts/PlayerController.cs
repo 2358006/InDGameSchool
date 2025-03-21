@@ -11,7 +11,7 @@ public class PlayerController : NetworkBehaviour
     float movementX;
     float movementY;
 
-    const float MOVE_FORCE = 100f;
+    const float MOVE_FORCE = 1000f;
 
     public override void OnStartLocalPlayer()
     {
