@@ -4,58 +4,92 @@ using Mirror;
 public class PlayerController : NetworkBehaviour
 {
     PlayerInputAction playerInput;
+    private SceneScript sceneScript;
 
     public TextMesh playerNameText;
-    public GameObject flaotingInfo;
+    public GameObject floatingInfo;
 
-    [SyncVar(hook = nameof(OnNameChanged))]
+    [SyncVar(hook = nameof(OnNameChange))]
     public string playerName;
-
 
     [SyncVar(hook = nameof(OnColorChanged))]
     public Color playerColor = Color.white;
 
-    Material playerMaterialClone;
+    [Command]
+    public void CmdSendPlayerMessage()
+    {
+        if (sceneScript)
+            sceneScript.statusText = $"{playerName} say hello {Random.Range(10, 99)}";
+    }
+
+    private Material playerMaterialClone;
 
     [SerializeField]
-    Rigidbody rb;
+    private Rigidbody rb;
 
-    float movementX;
-    float movementY;
+    private float movementX;
+    private float movementY;
 
     const float MOVE_FORCE = 1000f;
 
-    void OnNameChanged(string _old, string _new)
+    void OnNameChange(string _old, string _new)
     {
         playerNameText.text = playerName;
     }
 
-    void OnColorChanged(Color oldColor, Color newColor)
+    #region Unity Callback
+    private void Awake()
+    {
+        sceneScript = GameObject.FindObjectOfType<SceneScript>();
+    }
+
+    void Update()
+    {
+        Vector3 movement = new Vector3(movementX, 0f, movementY) * MOVE_FORCE * Time.deltaTime;
+        rb.AddForce(movement);
+
+        Vector3 pos = this.transform.position;
+        floatingInfo.transform.position = pos + Vector3.up * 1.5f;
+    }
+    #endregion
+
+    #region other
+    void OnColorChanged(Color oldColer, Color newColor)
     {
         Renderer currRender = this.GetComponent<Renderer>();
         playerMaterialClone = new Material(currRender.material);
         playerMaterialClone.color = newColor;
         currRender.material = playerMaterialClone;
-
-        string name = $"Player {Random.Range(100, 1000)}";
     }
-
     public override void OnStartLocalPlayer()
     {
-        Debug.Log("S S S Start Local Player");
+        Debug.Log("Start Local Player...");
+
+        sceneScript.playerScript = this;
+
         Camera mainCam = Camera.main;
         var camController = mainCam.GetComponent<CameraController>();
         camController.SetupPlayer(this.gameObject);
 
         playerInput = new PlayerInputAction();
         playerInput.Player.Enable();
-        playerInput.Player.Move.performed += ctx => this.OnMovement(ctx);
-        playerInput.Player.Move.canceled += ctx => this.OnMovement(ctx);
+        playerInput.Player.Move.performed += ctx => this.OnMove(ctx);
+        playerInput.Player.Move.canceled += ctx => this.OnMove(ctx);
+
+        string name = $"Player {Random.Range(100, 1000)}";
 
         Color color = new Color(Random.Range(0f, 1f), Random.Range(0f, 1f), Random.Range(0f, 1f));
         CmdSetupPlayer(name, color);
 
-        flaotingInfo.transform.parent = null;
+        floatingInfo.transform.parent = null;
+    }
+
+    public override void OnStartClient()
+    {
+        if (!isLocalPlayer)
+        {
+            floatingInfo.transform.parent = null;
+        }
     }
 
     [Command]
@@ -63,23 +97,12 @@ public class PlayerController : NetworkBehaviour
     {
         playerName = name;
         playerColor = color;
+        sceneScript.statusText = $"{playerName} joined...";
     }
 
-    void FixedUpdate()
+    public void OnMove(InputAction.CallbackContext ctx)
     {
-        Vector3 movement = new Vector3(movementX, 0f, movementY) * MOVE_FORCE * Time.deltaTime;
-        rb.AddForce(movement);
-
-        Vector3 pos = this.transform.position;
-        flaotingInfo.transform.position = pos + Vector3.up * 1.5f;
-    }
-
-    public void OnMovement(InputAction.CallbackContext ctx)
-    {
-        if (!isLocalPlayer)
-        {
-            return;
-        }
+        if (!isLocalPlayer) return;
 
         if (ctx.performed)
         {
@@ -95,4 +118,6 @@ public class PlayerController : NetworkBehaviour
             movementY = 0.0f;
         }
     }
+    #endregion
+
 }
