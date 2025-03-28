@@ -1,7 +1,6 @@
 using UnityEngine;
 using UnityEngine.InputSystem;
 using Mirror;
-using Mirror.BouncyCastle.Crypto.Modes;
 public class PlayerController : NetworkBehaviour
 {
     PlayerInputAction playerInput;
@@ -41,15 +40,17 @@ public class PlayerController : NetworkBehaviour
     #region Unity Callback
     private void Awake()
     {
-        sceneScript = GameObject.FindObjectOfType<SceneScript>();
+        // sceneScript = GameObject.FindObjectOfType<SceneScript>();
 
-        foreach (var item in weaponArray)
-        {
-            if (item != null)
-            {
-                item.SetActive(false);
-            }
-        }
+        // foreach (var item in weaponArray)
+        // {
+        //     if (item != null)
+        //     {
+        //         item.SetActive(false);
+        //     }
+        // }
+
+        sceneScript = GameObject.Find("SceneReference").GetComponent<SceneReference>().sceneScript;
     }
 
     void Update()
