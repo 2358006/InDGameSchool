@@ -561,6 +561,7 @@ GameObject:
   - component: {fileID: 8043445599543653057}
   - component: {fileID: 392809975604253041}
   - component: {fileID: 1993275587060603995}
+  - component: {fileID: 7038037138297598603}
   m_Layer: 0
   m_Name: WeaponLeft
   m_TagString: Untagged
@@ -634,6 +635,23 @@ MeshRenderer:
   m_SortingLayer: 0
   m_SortingOrder: 0
   m_AdditionalVertexStreams: {fileID: 0}
+--- !u!114 &7038037138297598603
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 4898942618901935822}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 50d3d0367fda5224bb032dedbcb136fe, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  weaponSpeed: 15
+  weaponLife: 3
+  weaponCooldown: 1
+  weaponAmmo: 15
+  weaponBullet: {fileID: 0}
 --- !u!1 &5467256001788994795
 GameObject:
   m_ObjectHideFlags: 0
@@ -742,6 +760,7 @@ GameObject:
   - component: {fileID: 2472094008772538912}
   - component: {fileID: 5096899040620064200}
   - component: {fileID: 1408171710556153814}
+  - component: {fileID: 1935211829925487859}
   m_Layer: 0
   m_Name: WeaponRight
   m_TagString: Untagged
@@ -815,3 +834,20 @@ MeshRenderer:
   m_SortingLayer: 0
   m_SortingOrder: 0
   m_AdditionalVertexStreams: {fileID: 0}
+--- !u!114 &1935211829925487859
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6711740996926506589}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 50d3d0367fda5224bb032dedbcb136fe, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  weaponSpeed: 15
+  weaponLife: 3
+  weaponCooldown: 1
+  weaponAmmo: 15
+  weaponBullet: {fileID: 0}

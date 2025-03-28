@@ -1,6 +1,7 @@
 using UnityEngine;
 using UnityEngine.InputSystem;
 using Mirror;
+using UnityEngine.Assertions;
 public class PlayerController : NetworkBehaviour
 {
     PlayerInputAction playerInput;
@@ -8,6 +9,9 @@ public class PlayerController : NetworkBehaviour
 
     public TextMesh playerNameText;
     public GameObject floatingInfo;
+
+    Weapon activeWeapon;
+    float weaponCooldownTime;
 
     [SyncVar(hook = nameof(OnNameChange))]
     public string playerName;
@@ -51,6 +55,11 @@ public class PlayerController : NetworkBehaviour
         // }
 
         sceneScript = GameObject.Find("SceneReference").GetComponent<SceneReference>().sceneScript;
+
+        if (selectedWeaponLocal < weaponArray.Length && weaponArray[selectedWeaponLocal] != null)
+        {
+            sceneScript.UIAmmo(activeWeapon.weaponAmmo);
+        }
     }
 
     void Update()
@@ -83,6 +92,17 @@ public class PlayerController : NetworkBehaviour
         }
         // Quaternion(4원수) : x, y, z, w
         // Vector3의 x, y, z 와 다름
+
+        if (Input.GetButtonDown("Fire1"))
+        {
+            if (activeWeapon && Time.time > weaponCooldownTime && activeWeapon.weaponAmmo > 0)
+            {
+                weaponCooldownTime = Time.time + activeWeapon.weaponCooldown;
+                activeWeapon.weaponAmmo -= 1;
+                sceneScript.UIAmmo(activeWeapon.weaponAmmo);
+                CmdShootRay();
+            }
+        }
     }
 
     void UpdateWeaponPosition()
@@ -112,6 +132,7 @@ public class PlayerController : NetworkBehaviour
     {
         Debug.Log("Start Local Player...");
 
+        Assert.IsNotNull(sceneScript);
         sceneScript.playerScript = this;
 
         Camera mainCam = Camera.main;
@@ -160,6 +181,24 @@ public class PlayerController : NetworkBehaviour
         sceneScript.statusText = $"{playerName} joined...";
     }
 
+    [Command]
+    void CmdShootRay()
+    {
+
+    }
+
+    [ClientRpc]
+    void RpcFireWeapon()
+    {
+        GameObject bullet = Instantiate(
+            activeWeapon.weaponBullet,
+            activeWeapon.weaponFirePosition.position,
+            activeWeapon.weaponFirePosition.rotation);
+
+        bullet.GetComponent<Rigidbody>().velocity = bullet.transform.forward * activeWeapon.weaponSpeed;
+        Destroy(bullet, activeWeapon.weaponLife);
+    }
+
     public void OnMove(InputAction.CallbackContext ctx)
     {
         if (!isLocalPlayer) return;
@@ -195,6 +234,11 @@ public class PlayerController : NetworkBehaviour
 
         if (0 < _New && _New < weaponArray.Length && weaponArray[_New] != null)
             weaponArray[_New].SetActive(true);
+        activeWeapon = weaponArray[activeWeaponSynced].GetComponent<Weapon>();
+        if (isLocalPlayer)
+        {
+            sceneScript.UIAmmo(activeWeapon.weaponAmmo);
+        }
     }
 
     [Command]

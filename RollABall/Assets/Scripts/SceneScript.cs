@@ -8,6 +8,9 @@ public class SceneScript : NetworkBehaviour
     public PlayerController playerScript;
 
     SceneReference sceneReference;
+    public Text canvasAmmoText;
+
+    public void UIAmmo(int _value) => canvasAmmoText.text = $"Ammo : {_value}";
 
     [SyncVar(hook = nameof(OnStatusTextChanged))]
     public string statusText;

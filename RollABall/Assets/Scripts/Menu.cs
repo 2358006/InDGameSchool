@@ -1,6 +1,6 @@
 using UnityEngine;
 using UnityEngine.SceneManagement;
-public class Memu : MonoBehaviour
+public class Menu : MonoBehaviour
 {
     public void LoadScene()
     {
