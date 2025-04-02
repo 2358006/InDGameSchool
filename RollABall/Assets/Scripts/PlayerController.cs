@@ -2,22 +2,27 @@ using UnityEngine;
 using UnityEngine.InputSystem;
 using Mirror;
 using UnityEngine.Assertions;
+//using Random
 public class PlayerController : NetworkBehaviour
 {
+    //private PlayerInputAction Player
     PlayerInputAction playerInput;
     private SceneScript sceneScript;
 
     public TextMesh playerNameText;
     public GameObject floatingInfo;
 
-    Weapon activeWeapon;
-    float weaponCooldownTime;
+    private Weapon activeWeapon;
+    private float weaponCooldownTime;
 
     [SyncVar(hook = nameof(OnNameChange))]
     public string playerName;
 
     [SyncVar(hook = nameof(OnColorChanged))]
     public Color playerColor = Color.white;
+
+  
+
 
     [Command]
     public void CmdSendPlayerMessage()
@@ -44,31 +49,41 @@ public class PlayerController : NetworkBehaviour
     #region Unity Callback
     private void Awake()
     {
-        // sceneScript = GameObject.FindObjectOfType<SceneScript>();
+        
+        //sceneScript = GameObject.FindObjectOfType<SceneScript>();
+        
+        foreach (var item in weaponArray)
+        {
+            if (item != null)
+                item.SetActive(false);
+        }
+        
+        sceneScript = GameObject.Find("SceneRefer").GetComponent<SceneRefer>().sceneScript;
+        Debug.Log(sceneScript);
 
-        // foreach (var item in weaponArray)
-        // {
-        //     if (item != null)
-        //     {
-        //         item.SetActive(false);
-        //     }
-        // }
+        Assert.IsNotNull(sceneScript);
 
-        sceneScript = GameObject.Find("SceneReference").GetComponent<SceneReference>().sceneScript;
+        activeWeapon = weaponArray[selectedWeaponLocal].GetComponent<Weapon>();
 
-        if (selectedWeaponLocal < weaponArray.Length && weaponArray[selectedWeaponLocal] != null)
+        if(selectedWeaponLocal<weaponArray.Length &&weaponArray[selectedWeaponLocal] != null)
         {
             sceneScript.UIAmmo(activeWeapon.weaponAmmo);
         }
+        
     }
+    public void UpdateFloatingInfoPosition(Vector3 pos)
+    {
+        //Vector3 pos = this.transform.position;
+        floatingInfo.transform.position = pos + Vector3.up * 1.5f;
+        floatingInfo.transform.rotation = Quaternion.Euler(0f, 0f, 0f);
 
+    }
     void Update()
     {
         Vector3 pos = this.transform.position;
         if (!isLocalPlayer)
         {
             UpdateFloatingInfoPosition(pos);
-
             UpdateWeaponPosition();
             return;
         }
@@ -76,26 +91,25 @@ public class PlayerController : NetworkBehaviour
         Vector3 movement = new Vector3(movementX, 0f, movementY) * MOVE_FORCE * Time.deltaTime;
         rb.AddForce(movement);
 
+
         UpdateFloatingInfoPosition(pos);
         UpdateWeaponPosition();
 
-        if (Input.GetButtonDown("Fire2"))
+        if(Input.GetButtonDown("Fire2"))
         {
             var weapon = selectedWeaponLocal + 1;
 
             if (weapon > weaponArray.Length)
-            {
-                selectedWeaponLocal = 1;
-            }
-            selectedWeaponLocal = weapon;
-            CmdChangeActiveWeapon(selectedWeaponLocal);
-        }
-        // Quaternion(4원수) : x, y, z, w
-        // Vector3의 x, y, z 와 다름
+                weapon = 1;
 
-        if (Input.GetButtonDown("Fire1"))
+            selectedWeaponLocal = weapon;
+
+            CmdChangeActiveWeapon(selectedWeaponLocal);
+
+        }
+        if(Input.GetButtonDown("Fire1"))
         {
-            if (activeWeapon && Time.time > weaponCooldownTime && activeWeapon.weaponAmmo > 0)
+            if(activeWeapon&&Time.time>weaponCooldownTime && activeWeapon.weaponAmmo>0)
             {
                 weaponCooldownTime = Time.time + activeWeapon.weaponCooldown;
                 activeWeapon.weaponAmmo -= 1;
@@ -104,20 +118,6 @@ public class PlayerController : NetworkBehaviour
             }
         }
     }
-
-    void UpdateWeaponPosition()
-    {
-        weaponRoot.transform.position = this.transform.position;
-        var rot = this.transform.rotation.eulerAngles;
-
-        var currAngle = weaponRoot.transform.rotation.eulerAngles.y; // this.transform.rotation.eulerAngles.y;
-        var nextAngle = Mathf.Atan2(movementX, movementY);
-        var angle = Mathf.LerpAngle(currAngle, nextAngle, 3f * Time.deltaTime);
-        weaponRoot.transform.rotation = Quaternion.Euler(0f, angle, 0f);
-        // Quaternion.Slerp(Quaternion.Euler(0f, currAngle * Mathf.Rad2Deg, 0f), Quaternion.Euler(0f, nextAngle * Mathf.Rad2Deg, 0f), Time.deltaTime);
-        Debug.Log($"curr angle {currAngle}, next angel {nextAngle}");
-    }
-
     #endregion
 
     #region other
@@ -132,10 +132,14 @@ public class PlayerController : NetworkBehaviour
     {
         Debug.Log("Start Local Player...");
 
-        Assert.IsNotNull(sceneScript);
+       // Assert.IsNotNull
+
         sceneScript.playerScript = this;
 
         Camera mainCam = Camera.main;
+
+        //Debug.LogError(mainCam);
+
         var camController = mainCam.GetComponent<CameraController>();
         camController.SetupPlayer(this.gameObject);
 
@@ -150,9 +154,8 @@ public class PlayerController : NetworkBehaviour
         CmdSetupPlayer(name, color);
 
         floatingInfo.transform.parent = null;
+        ClearWeaponRootParent();
     }
-
-
     public override void OnStartClient()
     {
         if (!isLocalPlayer)
@@ -164,15 +167,9 @@ public class PlayerController : NetworkBehaviour
 
     void ClearWeaponRootParent()
     {
-        foreach (var item in weaponArray)
-        {
-            if (item != null)
-            {
-                item.transform.parent = null;
-            }
-        }
+        WeaponRoot.transform.parent = null;
+       
     }
-
     [Command]
     public void CmdSetupPlayer(string name, Color color)
     {
@@ -184,18 +181,18 @@ public class PlayerController : NetworkBehaviour
     [Command]
     void CmdShootRay()
     {
-
+        RpcFireWeapon();
     }
 
     [ClientRpc]
     void RpcFireWeapon()
     {
         GameObject bullet = Instantiate(
-            activeWeapon.weaponBullet,
-            activeWeapon.weaponFirePosition.position,
-            activeWeapon.weaponFirePosition.rotation);
-
-        bullet.GetComponent<Rigidbody>().velocity = bullet.transform.forward * activeWeapon.weaponSpeed;
+            activeWeapon.weaponBullet, 
+            activeWeapon.weaponBulletPos.position,
+            activeWeapon.weaponBulletPos.rotation);
+        bullet.GetComponent<Rigidbody>().velocity = 
+            bullet.transform.forward * activeWeapon.weaponSpeed;
         Destroy(bullet, activeWeapon.weaponLife);
     }
 
@@ -220,40 +217,57 @@ public class PlayerController : NetworkBehaviour
     #endregion
 
     #region Weapon
-    int selectedWeaponLocal = 1;
+
+    private int selectedWeaponLocal = 1;
+
+
+    public GameObject WeaponRoot;
     public GameObject[] weaponArray;
-    public GameObject weaponRoot;
 
     [SyncVar(hook = nameof(OnWeaponChanged))]
     public int activeWeaponSynced = 1;
 
     void OnWeaponChanged(int _Old, int _New)
     {
+        Debug.Log("tst");
+
         if (0 < _Old && _Old < weaponArray.Length && weaponArray[_Old] != null)
             weaponArray[_Old].SetActive(false);
 
         if (0 < _New && _New < weaponArray.Length && weaponArray[_New] != null)
-            weaponArray[_New].SetActive(true);
-        activeWeapon = weaponArray[activeWeaponSynced].GetComponent<Weapon>();
-        if (isLocalPlayer)
         {
-            sceneScript.UIAmmo(activeWeapon.weaponAmmo);
+            weaponArray[_New].SetActive(true);
+            activeWeapon = weaponArray[activeWeaponSynced].GetComponent<Weapon>();
+            if(isLocalPlayer) {
+                sceneScript.UIAmmo(activeWeapon.weaponAmmo);
+            }
         }
     }
 
     [Command]
-
     public void CmdChangeActiveWeapon(int newIndex)
     {
         activeWeaponSynced = newIndex;
     }
 
-
     #endregion
 
-    void UpdateFloatingInfoPosition(Vector3 pos)
+    void UpdateWeaponPosition()
     {
-        floatingInfo.transform.position = pos + Vector3.up * 1.5f;
-        floatingInfo.transform.rotation = Quaternion.Euler(0f, 0f, 0f);
+        WeaponRoot.transform.position = this.transform.position;
+        var rot = this.transform.rotation.eulerAngles * Mathf.Rad2Deg;
+        //WeaponRoot.transform.rotation = Qu
+        var currAngle = WeaponRoot.transform.rotation.eulerAngles.y;
+        var nextAngle = Mathf.Atan2(movementX, movementY)*Mathf.Rad2Deg;
+        var angle = Mathf.LerpAngle(currAngle, nextAngle,3f* Time.deltaTime);
+        WeaponRoot.transform.rotation = Quaternion.Euler(0f, angle, 0f);
+
+        /*
+        WeaponRoot.transform.rotation = Quaternion.Slerp(
+            Quaternion.Euler(0f, currAngle, 0f), 
+            Quaternion.Euler(0f, nextangle, 0f), 
+            Time.deltaTime);
+        */
+        //WeaponRoot.transform.rotation = Quaternion.Slerp(this.transform.rotation, Quaternion.Euler(0f, angle * Mathf.Rad2Deg, 0f);
     }
 }
