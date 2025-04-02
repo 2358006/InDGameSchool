@@ -6,7 +6,6 @@ public class Enemy : NetworkBehaviour
     [SerializeField] Rigidbody rb;
     [SerializeField] SphereCollider collider;
 
-
     void OnCllisionEnter(Collision collision)
     {
         if (!isServer) return;

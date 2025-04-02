@@ -34,8 +34,8 @@ public class PlayerController : NetworkBehaviour
     [SerializeField]
     Rigidbody rb;
 
-    float movementX;
-    float movementY;
+    [SyncVar] float movementX;
+    [SyncVar] float movementY;
 
     const float MOVE_FORCE = 1000f;
     const float WALKING_SPEED = 100f;
@@ -233,16 +233,25 @@ public class PlayerController : NetworkBehaviour
         if (ctx.performed)
         {
             Vector2 movementVector = ctx.ReadValue<Vector2>();
-            movementX = movementVector.x;
-            movementY = movementVector.y;
+            // movementX = movementVector.x;
+            // movementY = movementVector.y;
+            CmdUpdateMovement(movementVector.x, movementVector.y);
             Debug.Log($"{movementX}, {movementY}");
         }
 
         if (ctx.canceled)
         {
-            movementX = 0.0f;
-            movementY = 0.0f;
+            // movementX = 0.0f;
+            // movementY = 0.0f;
+            CmdUpdateMovement(0f, 0f);
         }
+    }
+
+    [Command]
+    void CmdUpdateMovement(float x, float y)
+    {
+        movementX = x;
+        movementY = y;
     }
     #endregion
 
@@ -297,6 +306,7 @@ public class PlayerController : NetworkBehaviour
         float currnetAngle = WeaponRoot.transform.rotation.eulerAngles.y;
         float smoothAngle = Mathf.LerpAngle(currnetAngle, targetAngle, Time.deltaTime * 15f);
         WeaponRoot.transform.rotation = Quaternion.Euler(0f, smoothAngle, 0f);
-
     }
+
+
 }
