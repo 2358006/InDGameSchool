@@ -5,7 +5,6 @@ public class CameraController : MonoBehaviour
     GameObject player;
     Vector3 offset;
 
-
     public void SetupPlayer(GameObject _player)
     {
         // player > camera Vector

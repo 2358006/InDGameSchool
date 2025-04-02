@@ -4,7 +4,7 @@ using UnityEngine.UI;
 using UnityEngine.SceneManagement;
 
 //internal class SceneScript : NetworkBehaviour
-public  class SceneScript : NetworkBehaviour
+public class SceneScript : NetworkBehaviour
 {
     public Text canvasStatusText;
     public PlayerController playerScript;
@@ -13,8 +13,8 @@ public  class SceneScript : NetworkBehaviour
 
     public Text canvasAmmoText;
 
-    public void UIAmmo(int _value) =>   canvasAmmoText.text = $"Ammo: {_value}";
-    
+    public void UIAmmo(int _value) => canvasAmmoText.text = $"Ammo: {_value}";
+
 
     [SyncVar(hook = nameof(OnStatusTextChanged))]
     public string statusText;
@@ -31,10 +31,10 @@ public  class SceneScript : NetworkBehaviour
     }
     public void ButtonChangeScene()
     {
-        if(isServer)
+        if (isServer)
         {
             var scene = SceneManager.GetActiveScene();
-            if(scene.name.Equals("MyScene"))
+            if (scene.name.Equals("MyScene"))
             {
                 NetworkManager.singleton.ServerChangeScene("MyOtherScene");
             }
@@ -46,13 +46,12 @@ public  class SceneScript : NetworkBehaviour
         }
         else
         {
-             
             Debug.Log("You are not host");
         }
     }
 
-    private void Awake()
+    void Awake()
     {
-        
+
     }
 }

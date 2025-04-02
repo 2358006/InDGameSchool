@@ -2,13 +2,10 @@ using UnityEngine;
 using UnityEngine.InputSystem;
 using UnityEngine.Assertions;
 using Mirror;
-using TreeEditor;
-//using Random
 public class PlayerController : NetworkBehaviour
 {
-    //private PlayerInputAction Player
     PlayerInputAction playerInput;
-    private SceneScript sceneScript;
+    SceneScript sceneScript;
 
     public TextMesh playerNameText;
     public GameObject floatingInfo;
@@ -16,8 +13,8 @@ public class PlayerController : NetworkBehaviour
     Vector3 lastSyncPosition;
     float syncThreshold = 0.01f; // 동기화 임계값
 
-    private Weapon activeWeapon;
-    private float weaponCooldownTime;
+    Weapon activeWeapon;
+    float weaponCooldownTime;
 
     [SyncVar(hook = nameof(OnNameChange))]
     public string playerName;
@@ -32,13 +29,13 @@ public class PlayerController : NetworkBehaviour
             sceneScript.statusText = $"{playerName} say hello {Random.Range(10, 99)}";
     }
 
-    private Material playerMaterialClone;
+    Material playerMaterialClone;
 
     [SerializeField]
-    private Rigidbody rb;
+    Rigidbody rb;
 
-    private float movementX;
-    private float movementY;
+    float movementX;
+    float movementY;
 
     const float MOVE_FORCE = 1000f;
     const float WALKING_SPEED = 100f;
@@ -49,7 +46,7 @@ public class PlayerController : NetworkBehaviour
     }
 
     #region Unity Callback
-    private void Awake()
+    void Awake()
     {
 
         //sceneScript = GameObject.FindObjectOfType<SceneScript>();
@@ -142,7 +139,7 @@ public class PlayerController : NetworkBehaviour
         }
         if (Input.GetButtonDown("Fire1"))
         {
-            if (activeWeapon && Time.time > weaponCooldownTime && activeWeapon.weaponAmmo > 0)
+            if (activeWeapon && activeWeapon.gameObject.activeSelf && Time.time > weaponCooldownTime && activeWeapon.weaponAmmo > 0)
             {
                 weaponCooldownTime = Time.time + activeWeapon.weaponCooldown;
                 activeWeapon.weaponAmmo -= 1;
@@ -251,8 +248,7 @@ public class PlayerController : NetworkBehaviour
 
     #region Weapon
 
-    private int selectedWeaponLocal = 1;
-
+    int selectedWeaponLocal = 1;
 
     public GameObject WeaponRoot;
     public GameObject[] weaponArray;
