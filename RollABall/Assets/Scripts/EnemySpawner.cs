@@ -1,6 +1,6 @@
 using UnityEngine;
 using Mirror;
-using Mirror.BouncyCastle.Cms;
+using System.Collections;
 public class EnemySpawner : NetworkBehaviour
 {
     [SerializeField] Transform[] spawnPoint;
@@ -8,11 +8,9 @@ public class EnemySpawner : NetworkBehaviour
 
     float spawnTime = 1f;
     const float SPAWN_TIME_DELTA = 3f;
-    [SyncVar] float playTime = 0f;
 
     void Awake()
     {
-
         foreach (var sp in spawnPoint)
         {
             var render = sp.GetComponent<Renderer>();
@@ -20,37 +18,31 @@ public class EnemySpawner : NetworkBehaviour
         }
     }
 
-    void Update()
+    public override void OnStartServer()
     {
-        if (!isServer) return;
-
-        playTime += Time.deltaTime;
-
-        if (playTime > spawnTime)
-        {
-            spawnTime += SPAWN_TIME_DELTA;
-            CmdSpawnEnemy(Random.Range(0, spawnPoint.Length));
-            Debug.Log("Spawn Enemy");
-        }
+        InvokeRepeating(nameof(SpawnEnemy), spawnTime, SPAWN_TIME_DELTA);
     }
 
-
-    [ClientRpc]
-
-    void RpcSpawnEnemy(int spawnID)
+    [Server]
+    void SpawnEnemy()
     {
-        if (isServer)
-        {
-            CmdSpawnEnemy(spawnID);
-        }
-    }
-
-    [Command]
-    void CmdSpawnEnemy(int spawnID)
-    {
+        var spawnID = Random.Range(0, spawnPoint.Length);
         var sp = spawnPoint[spawnID];
-        GameObject enemy = Instantiate(enemyPrefab, sp.position, sp.rotation);
-        Destroy(enemy, 10f);
+        GameObject enemy = Instantiate(
+            enemyPrefab,
+            sp.position,
+            sp.rotation);
         NetworkServer.Spawn(enemy);
+        StartCoroutine(DestoryEnemyAfeterDelay(enemy, 10f));
+    }
+
+    IEnumerator DestoryEnemyAfeterDelay(GameObject enemy, float delay)
+    {
+        yield return new WaitForSeconds(delay);
+
+        if (enemy != null)
+        {
+            NetworkServer.Destroy(enemy);
+        }
     }
 }
