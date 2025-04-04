@@ -1,5 +1,6 @@
 using UnityEngine;
 using Mirror;
+using Mirror.BouncyCastle.Cms;
 public class EnemySpawner : NetworkBehaviour
 {
     [SerializeField] Transform[] spawnPoint;
@@ -11,6 +12,7 @@ public class EnemySpawner : NetworkBehaviour
 
     void Awake()
     {
+
         foreach (var sp in spawnPoint)
         {
             var render = sp.GetComponent<Renderer>();
@@ -20,19 +22,31 @@ public class EnemySpawner : NetworkBehaviour
 
     void Update()
     {
-        if (isServer)
+        if (!isServer) return;
+
+        playTime += Time.deltaTime;
+
+        if (playTime > spawnTime)
         {
-            playTime += Time.deltaTime;
-            if (playTime > spawnTime)
-            {
-                spawnTime += SPAWN_TIME_DELTA;
-                SpawnEnemy(Random.Range(0, spawnPoint.Length));
-                Debug.Log("Spawn Enemy");
-            }
+            spawnTime += SPAWN_TIME_DELTA;
+            CmdSpawnEnemy(Random.Range(0, spawnPoint.Length));
+            Debug.Log("Spawn Enemy");
         }
     }
 
-    void SpawnEnemy(int spawnID)
+
+    [ClientRpc]
+
+    void RpcSpawnEnemy(int spawnID)
+    {
+        if (isServer)
+        {
+            CmdSpawnEnemy(spawnID);
+        }
+    }
+
+    [Command]
+    void CmdSpawnEnemy(int spawnID)
     {
         var sp = spawnPoint[spawnID];
         GameObject enemy = Instantiate(enemyPrefab, sp.position, sp.rotation);

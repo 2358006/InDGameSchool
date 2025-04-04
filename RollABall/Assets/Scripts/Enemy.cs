@@ -5,6 +5,7 @@ public class Enemy : NetworkBehaviour
 {
     [SerializeField] Rigidbody rb;
     [SerializeField] SphereCollider collider;
+    [SerializeField] AudioSource audioSouce;
 
     void OnCllisionEnter(Collision collision)
     {
@@ -13,6 +14,7 @@ public class Enemy : NetworkBehaviour
         if (collision.gameObject.CompareTag("Bullet"))
         {
             RpcOnHit();
+            Debug.Log("나 맞았어유");
             StartCoroutine(DestoryAfterDelay());
         }
     }
@@ -22,6 +24,7 @@ public class Enemy : NetworkBehaviour
     {
         rb.isKinematic = true;
         collider.enabled = false;
+        audioSouce.PlayOneShot(audioSouce.clip);
     }
 
     IEnumerator DestoryAfterDelay()

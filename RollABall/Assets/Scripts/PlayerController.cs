@@ -10,7 +10,6 @@ public class PlayerController : NetworkBehaviour
 
     public TextMesh playerNameText;
     public GameObject floatingInfo;
-    // public AudioSource fireSource;
 
     Vector3 lastSyncPosition;
     float syncThreshold = 0.01f; // 동기화 임계값
@@ -39,7 +38,7 @@ public class PlayerController : NetworkBehaviour
     [SyncVar] float movementX;
     [SyncVar] float movementY;
 
-    const float MOVE_FORCE = 1000f;
+    const float MOVE_FORCE = 100f;
     const float WALKING_SPEED = 100f;
 
     void OnNameChange(string _old, string _new)
@@ -50,9 +49,6 @@ public class PlayerController : NetworkBehaviour
     #region Unity Callback
     void Awake()
     {
-
-        //sceneScript = GameObject.FindObjectOfType<SceneScript>();
-
         foreach (var item in weaponArray)
         {
             if (item != null)
@@ -74,10 +70,17 @@ public class PlayerController : NetworkBehaviour
 
     public void UpdateFloatingInfoPosition(Vector3 pos)
     {
-        //Vector3 pos = this.transform.position;
         floatingInfo.transform.position = pos + Vector3.up * 1.5f;
         floatingInfo.transform.rotation = Quaternion.Euler(0f, 0f, 0f);
+    }
 
+    void OnCollisionEnter(Collision collision)
+    {
+        if (!isLocalPlayer) return;
+        if (collision.gameObject.CompareTag("Enemy"))
+        {
+            Debug.Log("카리나 Rocket Puncher");
+        }
     }
 
     void Update()
@@ -100,9 +103,6 @@ public class PlayerController : NetworkBehaviour
             UpdateWeaponPosition();
             return;
         }
-
-        // Vector3 movement = new Vector3(movementX, 0f, movementY) * MOVE_FORCE * Time.deltaTime;
-        // rb.AddForce(movement);
 
         Vector3 currentVelocity = rb.velocity;
         if (currentVelocity.magnitude > WALKING_SPEED)
@@ -164,13 +164,9 @@ public class PlayerController : NetworkBehaviour
     {
         Debug.Log("Start Local Player...");
 
-        // Assert.IsNotNull
-
         sceneScript.playerScript = this;
 
         Camera mainCam = Camera.main;
-
-        //Debug.LogError(mainCam);
 
         var camController = mainCam.GetComponent<CameraController>();
         camController.SetupPlayer(this.gameObject);
@@ -219,8 +215,7 @@ public class PlayerController : NetworkBehaviour
     [ClientRpc]
     void RpcFireWeapon()
     {
-        var weapon = activeWeapon.GetComponent<Weapon>();
-        weapon.MakeFireSound();
+        activeWeapon.MakeFireSound();
         GameObject bullet = Instantiate(
             activeWeapon.weaponBullet,
             activeWeapon.weaponFirePos.position,
@@ -237,16 +232,12 @@ public class PlayerController : NetworkBehaviour
         if (ctx.performed)
         {
             Vector2 movementVector = ctx.ReadValue<Vector2>();
-            // movementX = movementVector.x;
-            // movementY = movementVector.y;
             CmdUpdateMovement(movementVector.x, movementVector.y);
             Debug.Log($"{movementX}, {movementY}");
         }
 
         if (ctx.canceled)
         {
-            // movementX = 0.0f;
-            // movementY = 0.0f;
             CmdUpdateMovement(0f, 0f);
         }
     }
@@ -311,6 +302,4 @@ public class PlayerController : NetworkBehaviour
         float smoothAngle = Mathf.LerpAngle(currnetAngle, targetAngle, Time.deltaTime * 15f);
         WeaponRoot.transform.rotation = Quaternion.Euler(0f, smoothAngle, 0f);
     }
-
-
 }
