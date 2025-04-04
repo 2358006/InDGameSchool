@@ -12,7 +12,6 @@ public class Enemy : NetworkBehaviour
 
         if (collision.gameObject.CompareTag("Bullet"))
         {
-            Debug.Log("닝닝 E.D Hacker");
             RpcOnHit();
             StartCoroutine(DestoryAfterDelay());
         }
