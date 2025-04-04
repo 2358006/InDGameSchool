@@ -36,7 +36,7 @@ public class EnemySpawner : NetworkBehaviour
     {
         var sp = spawnPoint[spawnID];
         GameObject enemy = Instantiate(enemyPrefab, sp.position, sp.rotation);
-        Destroy(enemy, 5f);
+        Destroy(enemy, 10f);
         NetworkServer.Spawn(enemy);
     }
 }

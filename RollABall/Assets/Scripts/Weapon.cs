@@ -7,5 +7,12 @@ public class Weapon : MonoBehaviour
     public int weaponAmmo = 15;
 
     public GameObject weaponBullet;
-    public Transform weaponBulletPos;
+    public Transform weaponFirePos;
+
+    public AudioSource fireSource;
+
+    public void MakeFireSound()
+    {
+        fireSource.PlayOneShot(fireSource.clip);
+    }
 }

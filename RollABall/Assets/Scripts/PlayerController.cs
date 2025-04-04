@@ -2,6 +2,7 @@ using UnityEngine;
 using UnityEngine.InputSystem;
 using UnityEngine.Assertions;
 using Mirror;
+using Random = UnityEngine.Random;
 public class PlayerController : NetworkBehaviour
 {
     PlayerInputAction playerInput;
@@ -9,6 +10,7 @@ public class PlayerController : NetworkBehaviour
 
     public TextMesh playerNameText;
     public GameObject floatingInfo;
+    // public AudioSource fireSource;
 
     Vector3 lastSyncPosition;
     float syncThreshold = 0.01f; // 동기화 임계값
@@ -217,10 +219,12 @@ public class PlayerController : NetworkBehaviour
     [ClientRpc]
     void RpcFireWeapon()
     {
+        var weapon = activeWeapon.GetComponent<Weapon>();
+        weapon.MakeFireSound();
         GameObject bullet = Instantiate(
             activeWeapon.weaponBullet,
-            activeWeapon.weaponBulletPos.position,
-            activeWeapon.weaponBulletPos.rotation);
+            activeWeapon.weaponFirePos.position,
+            activeWeapon.weaponFirePos.rotation);
         bullet.GetComponent<Rigidbody>().velocity =
             bullet.transform.forward * activeWeapon.weaponSpeed;
         Destroy(bullet, activeWeapon.weaponLife);
