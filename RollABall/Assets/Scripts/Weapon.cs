@@ -14,5 +14,6 @@ public class Weapon : MonoBehaviour
     public void MakeFireSound()
     {
         fireSource.PlayOneShot(fireSource.clip);
+        Debug.Log("소리 나유");
     }
 }
