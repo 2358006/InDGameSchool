@@ -152,7 +152,7 @@ MonoBehaviour:
   syncInterval: 0
   rb: {fileID: 2100387949785153364}
   collider: {fileID: 2100387949785153368}
-  audioSouce: {fileID: 0}
+  audioSource: {fileID: 2914068216833407093}
 --- !u!82 &2914068216833407093
 AudioSource:
   m_ObjectHideFlags: 0

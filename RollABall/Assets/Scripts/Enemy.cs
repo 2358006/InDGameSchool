@@ -5,7 +5,7 @@ public class Enemy : NetworkBehaviour
 {
     [SerializeField] Rigidbody rb;
     [SerializeField] SphereCollider collider;
-    [SerializeField] AudioSource audioSouce;
+    [SerializeField] AudioSource audioSource;
 
     void OnCllisionEnter(Collision collision)
     {
@@ -13,8 +13,8 @@ public class Enemy : NetworkBehaviour
 
         if (collision.gameObject.CompareTag("Bullet"))
         {
+            NetworkServer.Destroy(collision.gameObject);
             RpcOnHit();
-            Debug.Log("나 맞았어유");
             StartCoroutine(DestoryAfterDelay());
         }
     }
@@ -24,12 +24,20 @@ public class Enemy : NetworkBehaviour
     {
         rb.isKinematic = true;
         collider.enabled = false;
-        audioSouce.PlayOneShot(audioSouce.clip);
+
+        if (audioSource != null && audioSource.clip != null)
+        {
+            audioSource.PlayOneShot(audioSource.clip);
+        }
     }
 
     IEnumerator DestoryAfterDelay()
     {
-        yield return new WaitForSeconds(1f);
-        NetworkServer.Destroy(this.gameObject);
+        yield return new WaitForSeconds(0.1f);
+
+        if (isServer)
+        {
+            NetworkServer.Destroy(gameObject);
+        }
     }
 }
