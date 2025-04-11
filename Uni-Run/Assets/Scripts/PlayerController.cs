@@ -55,6 +55,9 @@ public class PlayerController : MonoBehaviour
 
         playerRigidbody.velocity = Vector2.zero;
         isDead = true;
+
+        // 게임 매니저의 게임 오버 처리 실행
+        GameManager.instance.OnPlayerDead();
     }
 
     void OnTriggerEnter2D(Collider2D other)
