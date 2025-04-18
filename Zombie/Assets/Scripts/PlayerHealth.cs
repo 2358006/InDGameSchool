@@ -65,10 +65,27 @@ public class PlayerHealth : LivingEntity
     {
         // LivingEntity의 Die() 실행(사망 적용)
         base.Die();
+
+        healthSlider.gameObject.SetActive(false);
+        playerAudioPlayer.PlayOneShot(deathClip);
+        playerAnimator.SetTrigger("Die");
+
+        playerMovement.enabled = false;
+        playerShooter.enabled = false;
     }
 
     void OnTriggerEnter(Collider other)
     {
         // 아이템과 충돌한 경우 해당 아이템을 사용하는 처리
+        if (!dead)
+        {
+            IItem item = other.GetComponent<IItem>();
+
+            if (item != null)
+            {
+                item.Use(gameObject);
+                playerAudioPlayer.PlayOneShot(itemPickupClip);
+            }
+        }
     }
 }
