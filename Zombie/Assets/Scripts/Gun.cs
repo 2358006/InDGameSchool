@@ -89,7 +89,6 @@ public class Gun : MonoBehaviour
         {
             hitPosition = fireTransform.position + transform.forward * fireDistance;
         }
-
         StartCoroutine(ShotEffect(hitPosition));
         magAmmo--;
         if (magAmmo <= 0)
@@ -102,13 +101,8 @@ public class Gun : MonoBehaviour
     IEnumerator ShotEffect(Vector3 hitPosition)
     {
         muzzleFlashEffect.Play();
-
         shellEjectEffect.Play();
-
         gunAudioPlayer.PlayOneShot(shotClip);
-
-        yield return new WaitForSeconds(shotClip.length);
-
         bulletLineRenderer.SetPosition(0, fireTransform.position);
         bulletLineRenderer.SetPosition(1, hitPosition);
 
@@ -132,19 +126,16 @@ public class Gun : MonoBehaviour
 
         // 재장전
         StartCoroutine(ReloadRoutine());
-
-        return false;
+        return true;
     }
 
     // 실제 재장전 처리를 진행
     IEnumerator ReloadRoutine()
     {
-        // 현재 상태를 재장전 중 상태로 전환
         state = State.Reloading;
 
         gunAudioPlayer.PlayOneShot(reloadClip);
 
-        // 재장전 소요 시간 만큼 처리를 쉬기
         yield return new WaitForSeconds(reloadTime);
 
         int ammoToFill = magCapacity - magAmmo;
@@ -156,6 +147,12 @@ public class Gun : MonoBehaviour
 
         magAmmo += ammoToFill;
         ammoRemain -= ammoToFill;
+
+        // 현재 상태를 재장전 중 상태로 전환
+        state = State.Reloading;
+
+        // 재장전 소요 시간 만큼 처리를 쉬기
+        yield return new WaitForSeconds(reloadTime);
 
         // 총의 현재 상태를 발사 준비된 상태로 변경
         state = State.Ready;

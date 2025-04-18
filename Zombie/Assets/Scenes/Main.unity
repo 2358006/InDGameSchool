@@ -556,14 +556,14 @@ Transform:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1531256401}
-  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
   m_LocalPosition: {x: 0, y: 1, z: 0.5}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:
   - {fileID: 1613264181}
-  m_Father: {fileID: 0}
-  m_RootOrder: 4
+  m_Father: {fileID: 2053162066}
+  m_RootOrder: 1
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1001 &1613264180
 PrefabInstance:
@@ -931,6 +931,18 @@ ParticleSystem:
     type: 3}
   m_PrefabInstance: {fileID: 1819320349}
   m_PrefabAsset: {fileID: 0}
+--- !u!4 &1837515970 stripped
+Transform:
+  m_CorrespondingSourceObject: {fileID: 4789895822770736, guid: 13259943c4d634186ac994d570bb3253,
+    type: 3}
+  m_PrefabInstance: {fileID: 1613264180}
+  m_PrefabAsset: {fileID: 0}
+--- !u!4 &1837515971 stripped
+Transform:
+  m_CorrespondingSourceObject: {fileID: 4355249862128598, guid: 13259943c4d634186ac994d570bb3253,
+    type: 3}
+  m_PrefabInstance: {fileID: 1613264180}
+  m_PrefabAsset: {fileID: 0}
 --- !u!1001 &2053162058
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -1077,3 +1089,19 @@ Transform:
     type: 3}
   m_PrefabInstance: {fileID: 2053162058}
   m_PrefabAsset: {fileID: 0}
+--- !u!114 &2053162067
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2053162059}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: a558a9e6e5e01c842a3d56a3e825e54e, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  gun: {fileID: 1613264185}
+  gunPivot: {fileID: 1531256402}
+  leftHandMount: {fileID: 1837515971}
+  rightHandMount: {fileID: 1837515970}
