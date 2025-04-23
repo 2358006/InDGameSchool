@@ -79,11 +79,33 @@ public class Enemy : LivingEntity
         // 살아있는 동안 무한 루프
         while (!dead)
         {
+            if (hasTarget)
+            {
+                // 추적 대상 존재 : 경로 갱신하고 AI 이동 계속 진행
+
+                pathFinder.isStopped = false;
+                pathFinder.SetDestination(targetEntity.transform.position);
+            }
+            else
+            {
+                Collider[] colliders = Physics.OverlapSphere(transform.position, 20f, whatIsTarget);
+
+                for (int i = 0; i < colliders.Length; i++)
+                {
+                    var livingEntity = colliders[i].GetComponent<LivingEntity>();
+
+                    if (livingEntity != null && !livingEntity.dead)
+                    {
+                        targetEntity = livingEntity;
+                        break;
+                    }
+                }
+            }
+
             // 0.25초 주기로 처리 반복
             yield return new WaitForSeconds(0.25f);
         }
     }
-
     // 데미지를 입었을때 실행할 처리
     public override void OnDamage(float damage, Vector3 hitPoint, Vector3 hitNormal)
     {
@@ -124,5 +146,19 @@ public class Enemy : LivingEntity
     void OnTriggerStay(Collider other)
     {
         // 트리거 충돌한 상대방 게임 오브젝트가 추적 대상이라면 공격 실행   
+
+        if (!dead && Time.time >= lastAttackTime + timeBetAttack)
+        {
+            LivingEntity attackTarget = other.GetComponent<LivingEntity>();
+            if (attackTarget != null && attackTarget == targetEntity)
+            {
+                lastAttackTime = Time.time;
+
+                Vector3 hitPoint = other.ClosestPoint(transform.position);
+                Vector3 hitNormal = transform.position - other.transform.position;
+
+                attackTarget.OnDamage(damage, hitPoint, hitNormal);
+            }
+        }
     }
 }
